@@ -1,0 +1,77 @@
+#!/bin/bash
+set -e
+
+add_user_and_group() {
+	if ! getent group {{if eq .Domain "edge"}}thingsplex{{else}}futurehome{{end}} >/dev/null
+	then
+		echo -n "Adding group {{if eq .Domain "edge"}}thingsplex{{else}}futurehome{{end}}..."
+		addgroup --quiet \
+			--system \
+			{{if eq .Domain "edge"}}thingsplex{{else}}futurehome{{end}} 2>/dev/null || true
+		echo "...OK"
+	fi
+
+	if ! getent passwd {{.PackageName}} >/dev/null
+	then
+		echo -n "Adding user {{.PackageName}}..."
+		adduser --quiet \
+			--system \
+			--ingroup {{if eq .Domain "edge"}}thingsplex{{else}}futurehome{{end}} \
+			--no-create-home \
+			--disabled-password \
+			{{.PackageName}} 2>/dev/null || true
+		echo "...OK"
+	fi
+}
+
+create_dirs_and_files() {
+	# Create required directories and files.{{if eq .Domain "edge"}}
+	mkdir -p /opt/thingsplex/{{.PackageName}}/data
+	mkdir -p /var/log/thingsplex/{{.PackageName}}
+	touch /var/log/thingsplex/{{.PackageName}}/{{.PackageName}}.log{{else}}
+	mkdir -p /var/log/futurehome/{{.PackageName}}
+	touch /var/log/futurehome/{{.PackageName}}/{{.PackageName}}.log{{end}}
+}
+
+set_ownership() {
+	# Set proper ownership and rights for files.{{if eq .Domain "edge"}}
+	chown -R {{.PackageName}}:thingsplex /opt/thingsplex/{{.PackageName}} || true
+	chown -R {{.PackageName}}:thingsplex /var/log/thingsplex/{{.PackageName}} || true
+	chmod -R 644 /var/log/thingsplex/{{.PackageName}} || true
+	chmod -R 644 /opt/thingsplex/{{.PackageName}}/defaults || true{{else}}
+	chown -R {{.PackageName}}:futurehome /var/lib/futurehome/{{.PackageName}} || true
+	chown -R {{.PackageName}}:futurehome /var/log/futurehome/{{.PackageName}} || true
+	chmod -R 644 /var/log/futurehome/{{.PackageName}} || true
+	chmod -R 644 /etc/futurehome/{{.PackageName}} || true{{end}}
+}
+
+configure_service() {
+		# Revert service to the previously recorded state.
+		deb-systemd-helper unmask {{.PackageName}}.service >/dev/null
+		# Enable service on the first installation.
+		deb-systemd-helper enable {{.PackageName}}.service >/dev/null
+		# Start service if it is enabled.
+		if deb-systemd-helper --quiet is-enabled {{.PackageName}}.service; then
+			deb-systemd-invoke start {{.PackageName}}.service > /dev/null
+		fi
+}
+
+case "$1" in
+	configure)
+	  echo "Configuring..."
+		add_user_and_group
+		create_dirs_and_files
+		set_ownership
+		configure_service
+	;;
+
+	abort-upgrade|abort-remove|abort-deconfigure)
+	;;
+
+	*)
+		echo "postinst called with an unknown argument \`$1'" >&2
+		exit 1
+	;;
+esac
+
+exit 0
