@@ -1,0 +1,14 @@
+[Unit]
+Description={{.Description}}
+
+[Service]
+Type=simple
+{{if eq .Domain "edge"}}ExecStart=/opt/thingsplex/{{.PackageName}}/{{.PackageName}}{{else if eq .Domain "core"}}ExecStart=/usr/bin/{{.PackageName}} -c /etc/futurehome/{{.PackageName}}{{end}}
+User={{.PackageName}}
+{{if eq .Domain "edge"}}WorkingDirectory=/opt/thingsplex/{{.PackageName}}{{else if eq .Domain "core"}}WorkingDirectory=/var/lib/futurehome/{{.PackageName}}{{end}}
+Restart=always
+StandardOutput=null
+StandardError=null
+
+[Install]
+WantedBy=multi-user.target

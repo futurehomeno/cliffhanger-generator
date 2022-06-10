@@ -1,0 +1,69 @@
+#!/bin/bash
+set -e
+
+add_user_and_group() {
+	if ! getent group futurehome >/dev/null
+	then
+		echo -n "Adding group futurehome..."
+		addgroup --quiet \
+			--system \
+			futurehome 2>/dev/null || true
+		echo "..done"
+	fi
+
+	if ! getent passwd energy-guard >/dev/null
+	then
+		echo -n "Adding user energy-guard..."
+		adduser --quiet \
+			--system \
+			--ingroup futurehome \
+			--no-create-home \
+			--disabled-password \
+			energy-guard 2>/dev/null || true
+		echo "..done"
+	fi
+
+}
+
+configure_defaults() {
+  ## For EDGE
+  ## * Create /var/log/thingsplex/package-name
+  ## * Touch log file there
+  ## * Create /opt/thingsplex/package-name/data
+
+
+  mkdir -p /var/log/futurehome/energy-guard
+  touch /var/log/futurehome/energy-guard/energy-guard.log
+}
+
+set_ownership() {
+	chown -R energy-guard:futurehome /var/lib/futurehome/energy-guard || true
+	chown -R energy-guard:futurehome /var/log/futurehome/energy-guard || true
+	chmod -R a+x /var/log/futurehome/energy-guard || true
+}
+
+
+case "$1" in
+	configure)
+	  echo "Configuring..."
+		add_user_and_group
+		configure_defaults
+    set_ownership
+
+		if [ -f /usr/bin/energy-guard ]
+		then
+		  systemctl enable energy-guard.service
+			systemctl start energy-guard.service
+		fi
+	;;
+
+	abort-upgrade|abort-remove|abort-deconfigure)
+	;;
+
+	*)
+		echo "postinst called with an unknown argument \`$1'" >&2
+		exit 1
+	;;
+esac
+
+exit 0

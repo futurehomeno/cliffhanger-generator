@@ -1,0 +1,22 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+	install|upgrade)
+		# Stop service if running
+		if [ -d /usr/bin/energy-guard ]
+		then
+			systemctl stop energy-guard.service
+		fi
+	;;
+
+	abort-upgrade)
+	;;
+
+	*)
+		echo "preinst called with an unknown argument \`$1'" >&2
+		exit 1
+	;;
+esac
+
+exit 0

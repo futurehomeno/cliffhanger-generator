@@ -1,0 +1,172 @@
+package cmd
+
+import ({{if eq .Domain "edge"}}{{if eq .Type "adapter"}}
+	cliffAdapter "github.com/futurehomeno/cliffhanger/adapter"{{end}}
+	cliffApp "github.com/futurehomeno/cliffhanger/app"{{end}}
+	"github.com/futurehomeno/cliffhanger/bootstrap"
+	"github.com/futurehomeno/cliffhanger/hub"{{if eq .Domain "edge"}}
+	"github.com/futurehomeno/cliffhanger/lifecycle"
+	"github.com/futurehomeno/cliffhanger/manifest"{{end}}
+	"github.com/futurehomeno/cliffhanger/router"
+	"github.com/futurehomeno/cliffhanger/task"
+	"github.com/futurehomeno/fimpgo"
+	log "github.com/sirupsen/logrus"
+{{if eq .Domain "edge"}}{{if eq .Type "adapter"}}
+	"github.com/futurehomeno/{{.RepositoryName}}/internal/adapter"{{end}}
+	"github.com/futurehomeno/{{.RepositoryName}}/internal/app"{{end}}
+	"github.com/futurehomeno/{{.RepositoryName}}/internal/config"
+	"github.com/futurehomeno/{{.RepositoryName}}/internal/routing"
+	"github.com/futurehomeno/{{.RepositoryName}}/internal/tasks"
+)
+
+// services is a container for services that are common dependencies.
+var services = &serviceContainer{}
+
+// serviceContainer is a type representing a dependency injection container to be used during bootstrap of the application.
+type serviceContainer struct {
+	configService *config.Service
+	hubInfo       *hub.Info
+	mqtt          *fimpgo.MqttTransport{{if eq .Domain "edge"}}
+	lifecycle     *lifecycle.Lifecycle
+
+	application         cliffApp.App
+	configurationLocker router.MessageHandlerLocker
+	manifestLoader      manifest.Loader{{if eq .Type "adapter"}}
+	adapter             cliffAdapter.ExtendedAdapter
+	thingFactory        cliffAdapter.ThingFactory{{end}}{{end}}{{ if .IncludeComments }}
+	// TODO: You may add any additional dependency that has to be injected, e.g.: API client.{{end}}
+}
+
+// getConfigService initiates a configuration service and loads the config.
+func getConfigService() *config.Service {
+	if services.configService == nil {
+		services.configService = config.NewConfigService({{if eq .Domain "core"}}
+			bootstrap.GetConfigurationDirectory(),{{end}}
+			bootstrap.GetWorkingDirectory(),
+		)
+
+		err := services.configService.Load()
+		if err != nil {
+			log.WithError(err).Fatal("failed to load configuration")
+		}
+	}
+
+	return services.configService
+}
+
+// getInfo retrieves hub info.{{ if .IncludeComments }}
+// TODO: You may remove this method if you do not need hub information in your application.{{end}}
+func getInfo(cfg *config.Config) *hub.Info {
+	if services.hubInfo == nil {
+		var err error
+
+		services.hubInfo, err = hub.LoadInfo(cfg.InfoFile)
+		if err != nil {
+			log.WithError(err).Fatal("failed to load hub info")
+		}
+	}
+
+	return services.hubInfo
+}
+
+// getMQTT creates or returns existing MQTT broker service.
+func getMQTT(cfg *config.Config) *fimpgo.MqttTransport {
+	if services.mqtt == nil {
+		services.mqtt = fimpgo.NewMqttTransport(cfg.MQTTServerURI, cfg.MQTTClientIDPrefix, cfg.MQTTUsername, cfg.MQTTPassword, true, 1, 1)
+		services.mqtt.SetDefaultSource(routing.ResourceName)
+		services.mqtt.SetAutoDecompression(true)
+	}
+
+	return services.mqtt
+}{{if eq .Domain "edge"}}
+
+// getLifecycle creates or returns existing lifecycle service.
+func getLifecycle(_ *config.Config) *lifecycle.Lifecycle {
+	if services.lifecycle == nil {
+		services.lifecycle = lifecycle.New()
+	}
+
+	return services.lifecycle
+}
+
+// getManifestLoader creates or returns existing manifest loader service.
+func getManifestLoader(cfg *config.Config) manifest.Loader {
+	if services.manifestLoader == nil {
+		services.manifestLoader = manifest.NewLoader(cfg.WorkDir)
+	}
+
+	return services.manifestLoader
+}
+
+// getConfigurationLocker creates or returns existing configuration locker.
+func getConfigurationLocker(_ *config.Config) router.MessageHandlerLocker {
+	if services.configurationLocker == nil {
+		services.configurationLocker = router.NewMessageHandlerLocker()
+	}
+
+	return services.configurationLocker
+}
+
+// getApplication creates or returns existing application.
+func getApplication(cfg *config.Config) cliffApp.App {
+	if services.application == nil {
+		services.application = app.New(
+			getConfigService(),
+			getLifecycle(cfg),
+			getManifestLoader(cfg),{{if eq .Type "adapter"}}
+			getAdapter(cfg),{{end}}
+		)
+	}
+
+	return services.application
+}{{if eq .Type "adapter"}}
+
+// getAdapter creates or returns existing adapter service.
+func getAdapter(cfg *config.Config) cliffAdapter.ExtendedAdapter {
+	if services.adapter == nil {
+		adapterState, err := cliffAdapter.NewState(cfg.WorkDir)
+		if err != nil {
+			log.WithError(err).Fatal("failed to load adapter state")
+		}
+
+		services.adapter = cliffAdapter.NewExtendedAdapter(
+			getMQTT(cfg),
+			getThingFactory(cfg),
+			adapterState,
+			routing.ResourceName,
+			"1",
+		)
+	}
+
+	return services.adapter
+}
+
+// getThingFactory creates or returns existing thing factory service.
+func getThingFactory(cfg *config.Config) cliffAdapter.ThingFactory {
+	if services.thingFactory == nil {
+		services.thingFactory = adapter.NewThingFactory(getConfigService())
+	}
+
+	return services.thingFactory
+}{{end}}{{end}}
+
+// newRouting creates new set of routing.
+func newRouting(cfg *config.Config) []*router.Routing {
+	return routing.New(
+		getConfigService(),{{if eq .Domain "edge"}}
+		getLifecycle(cfg),
+		getConfigurationLocker(cfg),
+		getApplication(cfg),{{if eq .Type "adapter"}}
+		getAdapter(cfg),{{end}}{{end}}
+	)
+}
+
+// newTasks creates new set of tasks.
+func newTasks(cfg *config.Config) []*task.Task {
+	return tasks.New(
+		getConfigService(),{{if eq .Domain "edge"}}
+		getLifecycle(cfg),
+		getApplication(cfg),{{if eq .Type "adapter"}}
+		getAdapter(cfg),{{end}}{{end}}
+	)
+}

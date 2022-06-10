@@ -1,0 +1,11 @@
+.idea
+.DS_Store
+*.deb
+package/build/*
+!package/build/.gitkeep
+{{if eq .Domain "edge"}}/package/debian/opt/thingsplex/{{.PackageName}}/{{.PackageName}}{{else}}/package/debian/usr/bin/{{.PackageName}}{{end}}
+/src/{{.PackageName}}
+testdata/log/*
+!testdata/log/.gitkeep
+testdata/data/*
+!testdata/data/.gitkeep

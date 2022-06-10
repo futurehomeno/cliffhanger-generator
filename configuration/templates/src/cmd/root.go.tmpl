@@ -1,0 +1,56 @@
+package cmd
+
+import (
+	"github.com/futurehomeno/cliffhanger/bootstrap"
+	{{if eq .Domain "edge"}}"github.com/futurehomeno/cliffhanger/edge"{{else}}"github.com/futurehomeno/cliffhanger/core"{{end}}
+	"github.com/futurehomeno/cliffhanger/router"
+	log "github.com/sirupsen/logrus"
+
+	"github.com/futurehomeno/{{.RepositoryName}}/internal/config"
+	"github.com/futurehomeno/{{.RepositoryName}}/internal/routing"
+)
+
+// Execute loads configuration and then builds and executes the application.
+func Execute() {
+	// nolint:forcetypeassert
+	cfg := getConfigService().Model().(*config.Config)
+
+	bootstrap.InitializeLogger(cfg.LogFile, cfg.LogLevel, cfg.LogFormat)
+
+	app, err := Build(cfg)
+	if err != nil {
+		log.WithError(err).Fatalf("failed to build the application")
+	}
+
+	err = app.Start()
+	if err != nil {
+		log.WithError(err).Fatalf("failed to start the application")
+	}
+
+	bootstrap.WaitForShutdown()
+
+	err = app.Stop()
+	if err != nil {
+		log.WithError(err).Fatalf("failed to stop the application")
+	}
+}
+
+// Build builds the application.
+func Build(cfg *config.Config) ({{if eq .Domain "edge"}}edge.Edge{{else}}core.Core{{end}}, error) {
+	app, err := {{if eq .Domain "edge"}}edge{{else}}core{{end}}.NewBuilder().
+		WithMQTT(getMQTT(cfg)).
+		WithServiceDiscovery(routing.GetDiscoveryResource()).{{if eq .Domain "edge"}}
+		WithLifecycle(getLifecycle(cfg)).{{end}}
+		WithTopicSubscription(
+			{{if eq .Type "app"}}router.TopicPatternApplication(routing.ResourceName),{{else}}router.TopicPatternAdapter(routing.ResourceName),
+			router.TopicPatternDevices(routing.ResourceName),{{end}}
+		).
+		WithRouting(newRouting(cfg)...).
+		WithTask(newTasks(cfg)...).
+		Build()
+	if err != nil {
+		return nil, err
+	}
+
+	return app, nil
+}

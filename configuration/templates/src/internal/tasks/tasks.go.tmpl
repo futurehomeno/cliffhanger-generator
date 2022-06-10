@@ -1,0 +1,25 @@
+package tasks
+
+import ({{if eq .Domain "edge"}}{{if eq .Type "adapter"}}
+	"github.com/futurehomeno/cliffhanger/adapter"{{end}}
+	"github.com/futurehomeno/cliffhanger/app"
+	"github.com/futurehomeno/cliffhanger/lifecycle"{{end}}
+	"github.com/futurehomeno/cliffhanger/task"
+
+	"github.com/futurehomeno/{{.RepositoryName}}/internal/config"
+)
+
+// New creates a new definition of background tasks to be performed by the application.
+func New(
+	cfgSrv *config.Service,{{if eq .Domain "edge"}}
+	appLifecycle *lifecycle.Lifecycle,
+	application app.App,{{if eq .Type "adapter"}}
+	adapter adapter.Adapter,{{end}}{{end}}
+) []*task.Task {
+	return task.Combine({{ if .IncludeComments }}
+		// TODO: You should add here all initialization or recurring tasks for your application.{{end}}{{if eq .Domain "edge"}}
+		app.TaskApp(application, appLifecycle),{{if eq .Type "adapter"}}{{ if .IncludeComments }}
+		// TODO: You should add here all recurring tasks for an adapter, such as periodic reporting of readings.
+		//  You can create your own tasks or use predefined tasks from cliffhanger, e.g.: thing.TaskBoiler(), meterelec.TaskReporting().{{end}}{{end}}{{end}}
+	)
+}

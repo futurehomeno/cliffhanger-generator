@@ -1,0 +1,68 @@
+version="0.0.1"
+version_file={{if eq .Domain "edge"}}package/debian/opt/thingsplex/$(app_name)/VERSION{{else}}package/debian/var/lib/futurehome/$(app_name)/VERSION{{end}}
+working_dir=$(shell pwd)
+app_name={{.PackageName}}
+remote_host = "fhtunnel@52.58.200.103"
+remote_port = "8000"
+
+clean:
+	-rm ./src/$(app_name)
+	{{if eq .Domain "edge"}}-rm ./package/debian/opt/thingsplex/$(app_name)/$(app_name){{else}}-rm ./package/debian/usr/bin/$(app_name){{end}}
+	find package/debian -name ".DS_Store" -delete
+
+build-go:
+	cd ./src; go build -o $(app_name) main.go; cd ../
+
+build-go-arm:
+	cd ./src; GOOS=linux GOARCH=arm GOARM=6 go build -ldflags="-s -w" -o $(app_name) main.go; cd ../
+
+build-go-amd:
+	cd ./src; GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o $(app_name) main.go; cd ../
+
+configure-arm:
+	sed -i.bak "1s/.*/$(version)/" $(version_file)
+	rm $(version_file).bak
+	sed -i.bak "s/Version: .*/Version: $(version)/" package/debian/DEBIAN/control
+	sed -i.bak "s/Architecture: .*/Architecture: armhf/" package/debian/DEBIAN/control
+	rm package/debian/DEBIAN/control.bak
+
+configure-amd64:
+	sed -i.bak "1s/.*/$(version)/" $(version_file)
+	rm $(version_file).bak
+	sed -i.bak "s/Version: .*/Version: $(version)/" package/debian/DEBIAN/control
+	sed -i.bak "s/Architecture: .*/Architecture: amd64/" package/debian/DEBIAN/control
+	rm package/debian/DEBIAN/control.bak
+
+package-deb-docker:
+	{{if eq .Domain "edge"}}@echo "Packaging application using Thingsplex debian package layout..."
+	mkdir -p package/debian/var/log/thingsplex/$(app_name)
+	mkdir -p package/debian/opt/thingsplex/$(app_name)/data
+	chmod -R 755 package/debian
+	chmod 644 package/debian/opt/thingsplex/$(app_name)/defaults/*
+	chmod 644 package/debian/opt/thingsplex/$(app_name)/VERSION
+	cp ./src/$(app_name) package/debian/opt/thingsplex/$(app_name)
+	docker run --rm -v ${working_dir}:/build -w /build --name debuild debian dpkg-deb --build package/debian{{else}}@echo "Packaging application as debian package..."
+	mkdir -p package/debian/usr/bin
+	mkdir -p package/debian/var/log/futurehome/$(app_name)
+	chmod -R 755 package/debian
+	chmod 644 package/debian/etc/futurehome/$(app_name)/*
+	cp ./src/$(app_name) package/debian/usr/bin/$(app_name)
+	docker run --rm -v ${working_dir}:/build -w /build --name debuild debian dpkg-deb --build package/debian{{end}}
+	@echo "Done"
+
+deb-arm: clean configure-arm build-go-arm package-deb-docker
+	mv package/debian.deb package/build/$(app_name)_$(version)_armhf.deb
+
+deb-amd: clean configure-amd64 build-go-amd package-deb-docker
+	mv package/debian.deb package/build/$(app_name)_$(version)_amd64.deb
+
+upload:
+	scp -P ${remote_port} package/build/$(app_name)_$(version)_armhf.deb $(remote_host):~/
+
+run: build-go
+	{{if eq .Domain "edge"}}cd ./testdata; ../src/$(app_name) -c ./; cd ../{{else}}cd ./testdata/data; ../../src/$(app_name) -c ../defaults; cd ../../{{end}}
+
+lint:
+	cd src; golangci-lint run; cd ..
+
+.phony : clean
