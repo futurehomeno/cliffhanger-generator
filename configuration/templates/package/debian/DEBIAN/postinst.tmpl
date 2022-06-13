@@ -60,7 +60,7 @@ configure_service() {
 		if deb-systemd-helper --quiet was-enabled {{.PackageName}}.service; then
 			deb-systemd-helper reenable {{.PackageName}}.service >/dev/null
 		else
-			deb-systemd-helper update-state {{.PackageName}}k.service >/dev/null
+			deb-systemd-helper update-state {{.PackageName}}.service >/dev/null
 		fi
 		if deb-systemd-helper --quiet is-enabled {{.PackageName}}.service; then
 			deb-systemd-invoke start {{.PackageName}}.service > /dev/null
