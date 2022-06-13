@@ -3,12 +3,14 @@ set -e
 
 case "$1" in
 	remove|purge)
-		# Remove all service logs.{{if eq .Domain "edge"}}
+		echo -n "Removing service logs..."{{if eq .Domain "edge"}}
 		rm /var/log/thingsplex/{{.PackageName}}/* || true{{else}}
 		rm /var/log/futurehome/{{.PackageName}}/* || true{{end}}
-		# Remove all package data files.{{if eq .Domain "edge"}}
+		echo "...OK"
+		echo -n "Removing service configuration and data files..."{{if eq .Domain "edge"}}
 		rm /opt/thingsplex/{{.PackageName}}/data/* || true{{else}}
 		rm /var/lib/futurehome/{{.PackageName}}/* || true{{end}}
+		echo "...OK"
 	;;
 
 	upgrade|abort-upgrade|abort-install|failed-upgrade|disappear)

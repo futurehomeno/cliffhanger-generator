@@ -33,27 +33,33 @@ configure-amd64:
 	sed -i.bak "s/Architecture: .*/Architecture: amd64/" package/debian/DEBIAN/control
 	rm package/debian/DEBIAN/control.bak
 
-package-deb-docker:
+package-deb-lint:
+	docker run -w /root -v $(working_dir)/package/build/:/root/ -it eddelbuettel/lintian lintian $(app_name)_$(version)_armhf.deb --no-tag-display-limit
+
+package-deb:
 	{{if eq .Domain "edge"}}@echo "Packaging application using Thingsplex debian package layout..."
 	mkdir -p package/debian/var/log/thingsplex/$(app_name)
 	mkdir -p package/debian/opt/thingsplex/$(app_name)/data
 	chmod -R 755 package/debian
 	chmod 644 package/debian/opt/thingsplex/$(app_name)/defaults/*
 	chmod 644 package/debian/opt/thingsplex/$(app_name)/VERSION
+	chmod 644 package/debian/usr/lib/systemd/system/$(app_name).service
 	cp ./src/$(app_name) package/debian/opt/thingsplex/$(app_name)
 	docker run --rm -v ${working_dir}:/build -w /build --name debuild debian dpkg-deb --build package/debian{{else}}@echo "Packaging application as debian package..."
 	mkdir -p package/debian/usr/bin
 	mkdir -p package/debian/var/log/futurehome/$(app_name)
 	chmod -R 755 package/debian
 	chmod 644 package/debian/etc/futurehome/$(app_name)/*
+	chmod 644 package/debian/usr/lib/systemd/system/$(app_name).service
+	chmod 644 package/debian/var/lib/futurehome/$(app_name)/*
 	cp ./src/$(app_name) package/debian/usr/bin/$(app_name)
 	docker run --rm -v ${working_dir}:/build -w /build --name debuild debian dpkg-deb --build package/debian{{end}}
 	@echo "Done"
 
-deb-arm: clean configure-arm build-go-arm package-deb-docker
+deb-arm: clean configure-arm build-go-arm package-deb
 	mv package/debian.deb package/build/$(app_name)_$(version)_armhf.deb
 
-deb-amd: clean configure-amd64 build-go-amd package-deb-docker
+deb-amd: clean configure-amd64 build-go-amd package-deb
 	mv package/debian.deb package/build/$(app_name)_$(version)_amd64.deb
 
 upload:

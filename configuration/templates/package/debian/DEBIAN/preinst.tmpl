@@ -3,12 +3,13 @@ set -e
 
 case "$1" in
 	upgrade)
-		# Record current state of the service.
-		deb-systemd-helper mask {{.PackageName}}.service >/dev/null
-		# Stop system service.
+		echo -n "Pausing service if running..."
+		systemctl stop {{.PackageName}}.service > /dev/null
+		{{/* Following is a proper solution using deb-systemd-helper:
+		deb-systemd-helper mask {{.PackageName}}.service > /dev/null
 		deb-systemd-invoke stop {{.PackageName}}.service > /dev/null
-		# Disable system service.
-		deb-systemd-helper disable {{.PackageName}}.service >/dev/null
+		*/}}
+		echo "...OK"
 	;;
 
 	install|abort-upgrade)
