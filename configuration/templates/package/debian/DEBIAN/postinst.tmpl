@@ -55,15 +55,15 @@ configure_service() {
 		systemctl --system daemon-reload >/dev/null || true
 		systemctl start {{.PackageName}}.service > /dev/null || true
 		{{/* Following is a proper solution using deb-systemd-helper:
-		deb-systemd-helper unmask zombie-attack.service >/dev/null
-		deb-systemd-helper enable zombie-attack.service >/dev/null
-		if deb-systemd-helper --quiet was-enabled zombie-attack.service; then
-			deb-systemd-helper reenable zombie-attack.service >/dev/null
+		deb-systemd-helper unmask {{.PackageName}}.service >/dev/null
+		deb-systemd-helper enable {{.PackageName}}.service >/dev/null
+		if deb-systemd-helper --quiet was-enabled {{.PackageName}}.service; then
+			deb-systemd-helper reenable {{.PackageName}}.service >/dev/null
 		else
-			deb-systemd-helper update-state zombie-attack.service >/dev/null
+			deb-systemd-helper update-state {{.PackageName}}k.service >/dev/null
 		fi
-		if deb-systemd-helper --quiet is-enabled zombie-attack.service; then
-			deb-systemd-invoke start zombie-attack.service > /dev/null
+		if deb-systemd-helper --quiet is-enabled {{.PackageName}}.service; then
+			deb-systemd-invoke start {{.PackageName}}.service > /dev/null
 		fi
 		*/}}
 		echo "...OK"
