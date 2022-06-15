@@ -94,14 +94,8 @@ func (c *Config) FileSets() []string {
 	sets := []string{"common"}
 
 	if c.Domain == DomainEdge {
-		sets = append(sets, "edge")
-	}
-
-	if c.Domain == DomainEdge && c.Type == TypeAdapter {
-		sets = append(sets, "edge_adapter")
-	}
-
-	if c.Domain == DomainCore {
+		sets = append(sets, c.edgeFileSets()...)
+	} else {
 		sets = append(sets, "core")
 	}
 
@@ -109,12 +103,22 @@ func (c *Config) FileSets() []string {
 		sets = append(sets, "testing")
 	}
 
-	if c.Domain == DomainEdge && c.IncludeTesting {
-		sets = append(sets, "testing_edge")
+	return sets
+}
+
+func (c *Config) edgeFileSets() []string {
+	sets := []string{"edge"}
+
+	if c.Type == TypeAdapter {
+		sets = append(sets, "edge_adapter")
 	}
 
-	if c.Domain == DomainEdge && c.Type == TypeAdapter && c.IncludeTesting {
-		sets = append(sets, "testing_edge_adapter")
+	if c.IncludeTesting {
+		sets = append(sets, "testing_edge")
+
+		if c.Type == TypeAdapter {
+			sets = append(sets, "testing_edge_adapter")
+		}
 	}
 
 	return sets
@@ -171,11 +175,11 @@ func ValidatePath(p string) error {
 	if os.IsNotExist(err) {
 		return fmt.Errorf("provided path does not exist")
 	} else if err != nil {
-		return fmt.Errorf("cannot check the path: %s", err)
+		return fmt.Errorf("cannot check the path %s: %w", p, err)
 	}
 
 	if !info.IsDir() {
-		return fmt.Errorf("provided path is not a directory")
+		return fmt.Errorf("provided path %s is not a directory", p)
 	}
 
 	return nil

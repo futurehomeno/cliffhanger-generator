@@ -28,13 +28,12 @@ func (c *Command) Execute(cfg Config) error {
 }
 
 func (c *Command) execute() error {
-	cmd := exec.Command(c.Cmd, c.Args...)
+	cmd := exec.Command(c.Cmd, c.Args...) //nolint:gosec
 	cmd.Dir = c.Dir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	err := cmd.Run()
-	if err != nil {
+	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to execute the command %s: %w", c.String(), err)
 	}
 

@@ -8,7 +8,7 @@ import (
 	"github.com/futurehomeno/cliffhanger-generator/configuration"
 )
 
-func Questions() []*survey.Question {
+func Questions() []*survey.Question { //nolint:funlen
 	return []*survey.Question{
 		{
 			Name: "domain",
@@ -19,7 +19,10 @@ func Questions() []*survey.Question {
 					configuration.DomainCore,
 				},
 				Default: configuration.DomainEdge,
-				Help:    fmt.Sprintf("Select '%s' if your application is an optional playground application, and '%s' if it is an internal service.", configuration.DomainEdge, configuration.DomainCore),
+				Help: fmt.Sprintf(
+					"Select '%s' if your application is an optional playground application, and '%s' if it is an internal service.",
+					configuration.DomainEdge, configuration.DomainCore,
+				),
 			},
 		},
 		{
@@ -31,14 +34,17 @@ func Questions() []*survey.Question {
 					configuration.TypeAdapter,
 				},
 				Default: configuration.TypeApp,
-				Help:    fmt.Sprintf("Select '%s' if your application acts as an adapter and adds additional devices to the system, or '%s' otherwise.", configuration.TypeAdapter, configuration.TypeApp),
+				Help: fmt.Sprintf(
+					"Select '%s' if your application acts as an adapter and adds additional devices to the system, or '%s' otherwise.",
+					configuration.TypeAdapter, configuration.TypeApp,
+				),
 			},
 		},
 		{
 			Name: "name",
 			Prompt: &survey.Input{
 				Message: "Provide the name of the service",
-				Help:    fmt.Sprintf("The name of the service must be unique alphanumeric phrase that cosists of no more than three words."),
+				Help:    "The name of the service must be unique alphanumeric phrase that cosists of no more than three words.",
 			},
 			Transform: survey.Title,
 			Validate:  validateString(configuration.ValidateName),

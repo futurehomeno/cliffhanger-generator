@@ -8,11 +8,8 @@ import (
 
 func renderString(name, content string, data interface{}) (string, error) {
 	b, err := renderBytes(name, []byte(content), data)
-	if err != nil {
-		return "", err
-	}
 
-	return string(b), nil
+	return string(b), err
 }
 
 func renderBytes(name string, content []byte, data interface{}) ([]byte, error) {

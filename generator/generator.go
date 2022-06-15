@@ -19,7 +19,6 @@ func New(templateSet embed.FS, fileSet FileSet, commandSet CommandSet) Generator
 }
 
 type generator struct {
-	cfg         *Config
 	templateSet embed.FS
 	fileSet     FileSet
 	commandSet  CommandSet
@@ -74,7 +73,11 @@ func (g *generator) generateFiles(cfg Config) error {
 	var files []*File
 
 	for _, name := range cfg.FileSets() {
-		fs, _ := g.fileSet[name]
+		fs, ok := g.fileSet[name]
+		if !ok {
+			continue
+		}
+
 		files = append(files, fs...)
 	}
 
@@ -92,7 +95,11 @@ func (g *generator) executeCommands(cfg Config) error {
 	var commands []*Command
 
 	for _, name := range cfg.CommandSets() {
-		cs, _ := g.commandSet[name]
+		cs, ok := g.commandSet[name]
+		if !ok {
+			continue
+		}
+
 		commands = append(commands, cs...)
 	}
 

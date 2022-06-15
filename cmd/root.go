@@ -13,7 +13,7 @@ import (
 func Execute() {
 	var err error
 
-	fmt.Println("Welcome to the Cliffhanger generator!")
+	fmt.Println("Welcome to the Cliffhanger generator!") //nolint:forbidigo
 
 	cfg := &configuration.Config{}
 
@@ -29,10 +29,10 @@ func Execute() {
 		fail(fmt.Errorf("failed to generate project: %w", err))
 	}
 
-	fmt.Println("Done!")
+	fmt.Println("Done!") //nolint:forbidigo
 }
 
 func fail(err error) {
-	fmt.Printf("%s\n", err.Error())
+	fmt.Printf("%s\n", err.Error()) //nolint:forbidigo
 	os.Exit(1)
 }
