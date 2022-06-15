@@ -1,0 +1,25 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+	remove|purge)
+		echo -n "Removing service logs..."{{if eq .Domain "edge"}}
+		rm /var/log/thingsplex/{{.PackageName}}/* || true{{else}}
+		rm /var/log/futurehome/{{.PackageName}}/* || true{{end}}
+		echo "...OK"
+		echo -n "Removing service configuration and data files..."{{if eq .Domain "edge"}}
+		rm /opt/thingsplex/{{.PackageName}}/data/* || true{{else}}
+		rm /var/lib/futurehome/{{.PackageName}}/* || true{{end}}
+		echo "...OK"
+	;;
+
+	upgrade|abort-upgrade|abort-install|failed-upgrade|disappear)
+	;;
+
+	*)
+		echo "postrm called with an unknown argument \`$1'" >&2
+		exit 1
+	;;
+esac
+
+exit 0

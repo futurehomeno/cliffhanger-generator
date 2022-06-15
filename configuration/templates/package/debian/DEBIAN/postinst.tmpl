@@ -1,0 +1,89 @@
+#!/bin/bash
+set -e
+
+add_user_and_group() {
+	if ! getent group {{if eq .Domain "edge"}}thingsplex{{else}}futurehome{{end}} >/dev/null
+	then
+		echo -n "Adding group {{if eq .Domain "edge"}}thingsplex{{else}}futurehome{{end}}..."
+		addgroup --quiet \
+			--system \
+			{{if eq .Domain "edge"}}thingsplex{{else}}futurehome{{end}} 2>/dev/null || true
+		echo "...OK"
+	fi
+
+	if ! getent passwd {{.PackageName}} >/dev/null
+	then
+		echo -n "Adding user {{.PackageName}}..."
+		adduser --quiet \
+			--system \
+			--ingroup {{if eq .Domain "edge"}}thingsplex{{else}}futurehome{{end}} \
+			--no-create-home \
+			--disabled-password \
+			{{.PackageName}} 2>/dev/null || true
+		echo "...OK"
+	fi
+}
+
+create_dirs_and_files() {
+	echo -n "Creating required directories and files..."{{if eq .Domain "edge"}}
+	mkdir -p /opt/thingsplex/{{.PackageName}}/data
+	mkdir -p /var/log/thingsplex/{{.PackageName}}
+	touch /var/log/thingsplex/{{.PackageName}}/{{.PackageName}}.log{{else}}
+	mkdir -p /var/log/futurehome/{{.PackageName}}
+	touch /var/log/futurehome/{{.PackageName}}/{{.PackageName}}.log{{end}}
+	echo "...OK"
+}
+
+set_ownership() {
+	echo -n "Set proper ownership and rights for files..."{{if eq .Domain "edge"}}
+	chown -R {{.PackageName}}:thingsplex /opt/thingsplex/{{.PackageName}} || true
+	chown -R {{.PackageName}}:thingsplex /var/log/thingsplex/{{.PackageName}} || true
+	chmod 644 /opt/thingsplex/{{.PackageName}}/defaults/* || true
+	chmod 644 /opt/thingsplex/{{.PackageName}}/VERSION
+	chmod 644 /var/log/thingsplex/{{.PackageName}}/* || true{{else}}
+	chown -R {{.PackageName}}:futurehome /var/lib/futurehome/{{.PackageName}} || true
+	chown -R {{.PackageName}}:futurehome /var/log/futurehome/{{.PackageName}} || true
+	chmod 644 /var/log/futurehome/{{.PackageName}}/* || true
+	chmod 644 /etc/futurehome/{{.PackageName}}/* || true
+	chmod 644 /var/lib/futurehome/{{.PackageName}}/* || true{{end}}
+	echo "...OK"
+}
+
+configure_service() {
+		echo -n "Configuring service..."
+		systemctl enable {{.PackageName}}.service > /dev/null || true
+		systemctl --system daemon-reload >/dev/null || true
+		systemctl start {{.PackageName}}.service > /dev/null || true
+		{{/* Following is a proper solution using deb-systemd-helper:
+		deb-systemd-helper unmask {{.PackageName}}.service >/dev/null
+		deb-systemd-helper enable {{.PackageName}}.service >/dev/null
+		if deb-systemd-helper --quiet was-enabled {{.PackageName}}.service; then
+			deb-systemd-helper reenable {{.PackageName}}.service >/dev/null
+		else
+			deb-systemd-helper update-state {{.PackageName}}.service >/dev/null
+		fi
+		if deb-systemd-helper --quiet is-enabled {{.PackageName}}.service; then
+			deb-systemd-invoke start {{.PackageName}}.service > /dev/null
+		fi
+		*/}}
+		echo "...OK"
+}
+
+case "$1" in
+	configure)
+		add_user_and_group
+		create_dirs_and_files
+		set_ownership
+		configure_service
+	;;
+
+	abort-upgrade|abort-remove|abort-deconfigure)
+	;;
+
+	*)
+		echo "postinst called with an unknown argument \`$1'" >&2
+		exit 1
+	;;
+esac
+
+exit 0

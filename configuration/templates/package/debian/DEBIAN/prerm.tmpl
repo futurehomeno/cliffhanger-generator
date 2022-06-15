@@ -1,0 +1,26 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+	remove)
+		echo -n "Stopping and disabling service if present..."
+		systemctl stop {{.PackageName}}.service > /dev/null || true
+		systemctl disable {{.PackageName}}.service > /dev/null || true
+		{{/* Following is a proper solution using deb-systemd-helper:
+		deb-systemd-invoke stop {{.PackageName}}.service > /dev/null
+		deb-systemd-helper disable {{.PackageName}}.service >/dev/null
+		deb-systemd-helper purge {{.PackageName}}.service >/dev/null
+		*/}}
+		echo "...OK"
+	;;
+
+	upgrade|failed-upgrade|deconfigure)
+	;;
+
+	*)
+		echo "prerm called with an unknown argument \`$1'" >&2
+		exit 1
+	;;
+esac
+
+exit 0

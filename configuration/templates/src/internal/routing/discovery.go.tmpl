@@ -1,0 +1,23 @@
+package routing
+
+import (
+	"github.com/futurehomeno/cliffhanger/discovery"
+)
+
+// GetDiscoveryResource returns a service discovery configuration.
+func GetDiscoveryResource() *discovery.Resource {
+	return &discovery.Resource{
+		ResourceName:           ResourceName,
+		ResourceType:           {{if eq .Type "adapter"}}discovery.ResourceTypeAd{{else}}discovery.ResourceTypeApp{{end}},
+		ResourceFullName:       "{{.Name}}",
+		Author:                 "support@futurehome.no",
+		IsInstanceConfigurable: false,
+		InstanceID:             "1",
+		Version:                "1",{{if eq .Type "adapter"}}
+		AdapterInfo: discovery.AdapterInfo{
+			Technology:            "{{.ServiceName}}",
+			FwVersion:             "all",
+			NetworkManagementType: "inclusion_exclusion",
+		},{{end}}
+	}
+}

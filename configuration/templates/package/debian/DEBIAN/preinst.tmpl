@@ -1,0 +1,24 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+	upgrade)
+		echo -n "Pausing service if running..."
+		systemctl stop {{.PackageName}}.service > /dev/null
+		{{/* Following is a proper solution using deb-systemd-helper:
+		deb-systemd-helper mask {{.PackageName}}.service > /dev/null
+		deb-systemd-invoke stop {{.PackageName}}.service > /dev/null
+		*/}}
+		echo "...OK"
+	;;
+
+	install|abort-upgrade)
+	;;
+
+	*)
+		echo "preinst called with an unknown argument \`$1'" >&2
+		exit 1
+	;;
+esac
+
+exit 0
