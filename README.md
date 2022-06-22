@@ -12,3 +12,8 @@ $ go install github.com/futurehomeno/cliffhanger-generator@latest
 ```bash
 $ cliffhanger-generator
 ```
+
+## Showcase
+
+![Cliffhanger generator in action](doc/usage.gif)
+
