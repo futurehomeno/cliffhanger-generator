@@ -63,7 +63,6 @@ linters:
     - nlreturn
     - noctx
     - nolintlint
-    - paralleltest
     - predeclared
     - promlinter
     - revive
@@ -72,13 +71,14 @@ linters:
     - stylecheck
     - testpackage
     - thelper
-    - tparallel
     - unconvert
     - unparam
     - wastedassign
     - whitespace
     - goimports
   disable:
+    - paralleltest # Does not work well with integration tests that need to be run in sequence.
+    - tparallel # Does not work well with integration tests that need to be run in sequence.
     - tagliatelle # Need to maintain compatibility with legacy JSON models.
     - wrapcheck # To be enabled if comfortable to work with.
     - goerr113 # Too restrictive as forbids dynamic declaration of errors.
