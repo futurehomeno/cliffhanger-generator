@@ -74,7 +74,6 @@ func getMQTT(cfg *config.Config) *fimpgo.MqttTransport {
 	if services.mqtt == nil {
 		services.mqtt = fimpgo.NewMqttTransport(cfg.MQTTServerURI, cfg.MQTTClientIDPrefix, cfg.MQTTUsername, cfg.MQTTPassword, true, 1, 1)
 		services.mqtt.SetDefaultSource(routing.ResourceName)
-		services.mqtt.SetAutoDecompression(true)
 	}
 
 	return services.mqtt
