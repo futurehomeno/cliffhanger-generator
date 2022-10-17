@@ -1,4 +1,6 @@
 [Unit]
+StartLimitIntervalSec=10
+StartLimitBurst=5
 Description={{.Description}}
 
 [Service]
@@ -7,6 +9,7 @@ Type=simple
 User={{.PackageName}}
 {{if eq .Domain "edge"}}WorkingDirectory=/opt/thingsplex/{{.PackageName}}{{else if eq .Domain "core"}}WorkingDirectory=/var/lib/futurehome/{{.PackageName}}{{end}}
 Restart=always
+RestartSec=10
 StandardOutput=null
 StandardError=null
 
