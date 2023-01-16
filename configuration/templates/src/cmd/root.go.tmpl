@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/futurehomeno/cliffhanger/bootstrap"
-	{{if eq .Domain "edge"}}"github.com/futurehomeno/cliffhanger/edge"{{else}}"github.com/futurehomeno/cliffhanger/core"{{end}}
+	"github.com/futurehomeno/cliffhanger/root"
 	"github.com/futurehomeno/cliffhanger/router"
 	log "github.com/sirupsen/logrus"
 
@@ -22,22 +22,15 @@ func Execute() {
 		log.WithError(err).Fatalf("failed to build the application")
 	}
 
-	err = app.Start()
+	err = app.Run()
 	if err != nil {
-		log.WithError(err).Fatalf("failed to start the application")
-	}
-
-	bootstrap.WaitForShutdown()
-
-	err = app.Stop()
-	if err != nil {
-		log.WithError(err).Fatalf("failed to stop the application")
+		log.WithError(err).Fatalf("the application has stopped with an error")
 	}
 }
 
 // Build builds the application.
-func Build(cfg *config.Config) ({{if eq .Domain "edge"}}edge.Edge{{else}}core.Core{{end}}, error) {
-	app, err := {{if eq .Domain "edge"}}edge{{else}}core{{end}}.NewBuilder().
+func Build(cfg *config.Config) (root.App, error) {
+	app, err := root.New{{if eq .Domain "edge"}}Edge{{else}}Core{{end}}AppBuilder().
 		WithMQTT(getMQTT(cfg)).
 		WithServiceDiscovery(routing.GetDiscoveryResource()).{{if eq .Domain "edge"}}
 		WithLifecycle(getLifecycle(cfg)).{{end}}
