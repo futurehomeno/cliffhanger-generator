@@ -13,7 +13,7 @@ var CommandSet = map[string][]*generator.Command{
 		},
 		{
 			Cmd:  "go",
-			Args: []string{"get", "github.com/futurehomeno/cliffhanger@SDU-3043"},
+			Args: []string{"get", "github.com/futurehomeno/cliffhanger@latest"},
 			Dir:  "{{.SourcePath}}",
 		},
 		{
