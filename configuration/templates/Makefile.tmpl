@@ -2,7 +2,9 @@ version="0.0.1"
 version_file={{if eq .Domain "edge"}}package/debian/opt/thingsplex/$(app_name)/VERSION{{else}}package/debian/var/lib/futurehome/$(app_name)/VERSION{{end}}
 working_dir=$(shell pwd)
 app_name={{.PackageName}}
-remote_host = "fhtunnel@52.58.200.103"
+remote_host = "fhtunnel@$(beta_host)"
+beta_host = "52.58.200.103"
+prod_host = "34.247.133.26"
 remote_port = "8000"
 
 clean:
@@ -63,7 +65,7 @@ deb-amd: clean configure-amd64 build-go-amd package-deb
 	mv package/debian.deb package/build/$(app_name)_$(version)_amd64.deb
 
 upload:
-	scp -P ${remote_port} package/build/$(app_name)_$(version)_armhf.deb $(remote_host):~/
+	scp -O -P ${remote_port} package/build/$(app_name)_$(version)_armhf.deb $(remote_host):~/
 
 run: build-go
 	{{if eq .Domain "edge"}}cd ./testdata; ../src/$(app_name) -c ./; cd ../{{else}}cd ./testdata/data; ../../src/$(app_name) -c ../defaults; cd ../../{{end}}
