@@ -96,7 +96,7 @@ func (c *Config) FileSets() []string {
 	if c.Domain == DomainEdge {
 		sets = append(sets, c.edgeFileSets()...)
 	} else {
-		sets = append(sets, "core")
+		sets = append(sets, c.coreFileSets()...)
 	}
 
 	if c.IncludeTesting {
@@ -119,6 +119,16 @@ func (c *Config) edgeFileSets() []string {
 		if c.Type == TypeAdapter {
 			sets = append(sets, "testing_edge_adapter")
 		}
+	}
+
+	return sets
+}
+
+func (c *Config) coreFileSets() []string {
+	sets := []string{"core"}
+
+	if c.Type == TypeAdapter {
+		sets = append(sets, "core_adapter")
 	}
 
 	return sets

@@ -15,7 +15,7 @@ func GetDiscoveryResource() *discovery.Resource {
 		InstanceID:             "1",
 		Version:                "1",{{if eq .Type "adapter"}}
 		AdapterInfo: discovery.AdapterInfo{
-			Technology:            "{{.ServiceName}}",
+			Technology:            "cloud",
 			FwVersion:             "all",
 			NetworkManagementType: "inclusion_exclusion",
 		},{{end}}

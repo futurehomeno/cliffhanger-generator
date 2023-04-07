@@ -1,8 +1,8 @@
 package routing
 
-import ({{if eq .Domain "edge"}}{{if eq .Type "adapter"}}
+import ({{if eq .Type "adapter"}}
 	cliffAdapter "github.com/futurehomeno/cliffhanger/adapter"{{end}}
-	"github.com/futurehomeno/cliffhanger/app"{{end}}
+	{{if eq .Domain "edge"}}"github.com/futurehomeno/cliffhanger/app"{{end}}
 	cliffConfig "github.com/futurehomeno/cliffhanger/config"{{if eq .Domain "edge"}}
 	"github.com/futurehomeno/cliffhanger/lifecycle"{{end}}
 	"github.com/futurehomeno/cliffhanger/router"
@@ -20,8 +20,8 @@ func New(
 	cfgSrv *config.Service,{{if eq .Domain "edge"}}
 	appLifecycle *lifecycle.Lifecycle,
 	configurationLocker router.MessageHandlerLocker,
-	application app.App,{{if eq .Type "adapter"}}
-	adapter cliffAdapter.Adapter,{{end}}{{end}}
+	application app.App,{{end}}{{if eq .Type "adapter"}}
+	adapter cliffAdapter.Adapter,{{end}}
 ) []*router.Routing {
 	return router.Combine({{ if .IncludeComments }}
 		// TODO: Add here any routing specific for your application or its internal services.{{end}}
@@ -29,9 +29,9 @@ func New(
 			cliffConfig.RouteCmdLogSetLevel(ServiceName, cfgSrv.SetLogLevel),
 			cliffConfig.RouteCmdLogGetLevel(ServiceName, cfgSrv.GetLogLevel),
 		},{{if eq .Domain "edge"}}
-		app.RouteApp(ServiceName, appLifecycle, cfgSrv, config.Factory, configurationLocker, application),{{if eq .Type "adapter"}}
-		cliffAdapter.RouteAdapter(adapter, nil),{{ if .IncludeComments }}
+		app.RouteApp(ServiceName, appLifecycle, cfgSrv, config.Factory, configurationLocker, application),{{end}}{{if eq .Type "adapter"}}
+		cliffAdapter.RouteAdapter(adapter),{{ if .IncludeComments }}
 		// TODO: You should add here entire routing for an adapter, such as listeners for commands for devices.
-		//  You can create your own routing or use predefined routes from cliffhanger, e.g.: thing.RouteBoiler(), meterelec.Route().{{end}}{{end}}{{end}}
+		//  You can create your own routing or use predefined routes from cliffhanger, e.g.: thing.RouteBoiler(), meterelec.Route().{{end}}{{end}}
 	)
 }

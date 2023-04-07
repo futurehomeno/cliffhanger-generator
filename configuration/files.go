@@ -46,6 +46,11 @@ var FileSet = map[string][]*generator.File{
 		{Path: "package/debian/etc/futurehome/{{.PackageName}}/config.json", Permissions: 0644},
 		{Path: "package/debian/var/lib/futurehome/{{.PackageName}}/VERSION", Permissions: 0644},
 	},
+	"core_adapter": {
+		{Path: "package/debian/etc/futurehome/{{.PackageName}}/adapter.json", Permissions: 0644},
+		{Path: "src/internal/adapter/thing.go"},
+		{Path: "testdata/defaults/adapter.json"},
+	},
 	"testing": {
 		{Path: "src/cmd/testing.go"},
 		{Path: "src/test/helper.go"},

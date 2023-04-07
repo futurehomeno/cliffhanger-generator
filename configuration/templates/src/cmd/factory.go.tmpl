@@ -1,7 +1,7 @@
 package cmd
 
-import ({{if eq .Domain "edge"}}{{if eq .Type "adapter"}}
-	cliffAdapter "github.com/futurehomeno/cliffhanger/adapter"{{end}}
+import ({{if eq .Type "adapter"}}
+	cliffAdapter "github.com/futurehomeno/cliffhanger/adapter"{{end}}{{if eq .Domain "edge"}}
 	cliffApp "github.com/futurehomeno/cliffhanger/app"{{end}}
 	"github.com/futurehomeno/cliffhanger/bootstrap"
 	"github.com/futurehomeno/cliffhanger/hub"{{if eq .Domain "edge"}}
@@ -11,8 +11,8 @@ import ({{if eq .Domain "edge"}}{{if eq .Type "adapter"}}
 	"github.com/futurehomeno/cliffhanger/task"
 	"github.com/futurehomeno/fimpgo"
 	log "github.com/sirupsen/logrus"
-{{if eq .Domain "edge"}}{{if eq .Type "adapter"}}
-	"github.com/futurehomeno/{{.RepositoryName}}/internal/adapter"{{end}}
+{{if eq .Type "adapter"}}
+	"github.com/futurehomeno/{{.RepositoryName}}/internal/adapter"{{end}}{{if eq .Domain "edge"}}
 	"github.com/futurehomeno/{{.RepositoryName}}/internal/app"{{end}}
 	"github.com/futurehomeno/{{.RepositoryName}}/internal/config"
 	"github.com/futurehomeno/{{.RepositoryName}}/internal/routing"
@@ -31,9 +31,9 @@ type serviceContainer struct {
 
 	application         cliffApp.App
 	configurationLocker router.MessageHandlerLocker
-	manifestLoader      manifest.Loader{{if eq .Type "adapter"}}
-	adapter             cliffAdapter.ExtendedAdapter
-	thingFactory        cliffAdapter.ThingFactory{{end}}{{end}}{{ if .IncludeComments }}
+	manifestLoader      manifest.Loader{{end}}{{if eq .Type "adapter"}}
+	adapter             cliffAdapter.Adapter
+	thingFactory        cliffAdapter.ThingFactory{{end}}{{ if .IncludeComments }}
 	// TODO: You may add any additional dependency that has to be injected, e.g.: API client.{{end}}
 }
 
@@ -118,17 +118,17 @@ func getApplication(cfg *config.Config) cliffApp.App {
 	}
 
 	return services.application
-}{{if eq .Type "adapter"}}
+}{{end}}{{if eq .Type "adapter"}}
 
 // getAdapter creates or returns existing adapter service.
-func getAdapter(cfg *config.Config) cliffAdapter.ExtendedAdapter {
+func getAdapter(cfg *config.Config) cliffAdapter.Adapter {
 	if services.adapter == nil {
 		adapterState, err := cliffAdapter.NewState(cfg.WorkDir)
 		if err != nil {
 			log.WithError(err).Fatal("failed to load adapter state")
 		}
 
-		services.adapter = cliffAdapter.NewExtendedAdapter(
+		services.adapter = cliffAdapter.NewAdapter(
 			getMQTT(cfg),
 			getThingFactory(cfg),
 			adapterState,
@@ -147,7 +147,7 @@ func getThingFactory(cfg *config.Config) cliffAdapter.ThingFactory {
 	}
 
 	return services.thingFactory
-}{{end}}{{end}}
+}{{end}}
 
 // newRouting creates new set of routing.
 func newRouting(cfg *config.Config) []*router.Routing {
@@ -155,8 +155,8 @@ func newRouting(cfg *config.Config) []*router.Routing {
 		getConfigService(),{{if eq .Domain "edge"}}
 		getLifecycle(cfg),
 		getConfigurationLocker(cfg),
-		getApplication(cfg),{{if eq .Type "adapter"}}
-		getAdapter(cfg),{{end}}{{end}}
+		getApplication(cfg),{{end}}{{if eq .Type "adapter"}}
+		getAdapter(cfg),{{end}}
 	)
 }
 
@@ -165,7 +165,7 @@ func newTasks(cfg *config.Config) []*task.Task {
 	return tasks.New(
 		getConfigService(),{{if eq .Domain "edge"}}
 		getLifecycle(cfg),
-		getApplication(cfg),{{if eq .Type "adapter"}}
-		getAdapter(cfg),{{end}}{{end}}
+		getApplication(cfg),{{end}}{{if eq .Type "adapter"}}
+		getAdapter(cfg),{{end}}
 	)
 }

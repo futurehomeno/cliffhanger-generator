@@ -1,7 +1,9 @@
 package tasks
 
-import ({{if eq .Domain "edge"}}{{if eq .Type "adapter"}}
-	"github.com/futurehomeno/cliffhanger/adapter"{{end}}
+import ({{if eq .Type "adapter"}}
+    "time"
+
+	cliffAdapter "github.com/futurehomeno/cliffhanger/adapter"{{end}}{{if eq .Domain "edge"}}
 	"github.com/futurehomeno/cliffhanger/app"
 	"github.com/futurehomeno/cliffhanger/lifecycle"{{end}}
 	"github.com/futurehomeno/cliffhanger/task"
@@ -13,13 +15,14 @@ import ({{if eq .Domain "edge"}}{{if eq .Type "adapter"}}
 func New(
 	cfgSrv *config.Service,{{if eq .Domain "edge"}}
 	appLifecycle *lifecycle.Lifecycle,
-	application app.App,{{if eq .Type "adapter"}}
-	adapter adapter.Adapter,{{end}}{{end}}
+	application app.App,{{end}}{{if eq .Type "adapter"}}
+	adapter cliffAdapter.Adapter,{{end}}
 ) []*task.Task {
-	return task.Combine({{ if .IncludeComments }}
+	return task.Combine[[]*task.Task]({{ if .IncludeComments }}
 		// TODO: You should add here all initialization or recurring tasks for your application.{{end}}{{if eq .Domain "edge"}}
-		app.TaskApp(application, appLifecycle),{{if eq .Type "adapter"}}{{ if .IncludeComments }}
+		app.TaskApp(application, appLifecycle),{{end}}{{if eq .Type "adapter"}}
+		cliffAdapter.TaskAdapter(adapter, 30 * time.Second),{{ if .IncludeComments }}
 		// TODO: You should add here all recurring tasks for an adapter, such as periodic reporting of readings.
-		//  You can create your own tasks or use predefined tasks from cliffhanger, e.g.: thing.TaskBoiler(), meterelec.TaskReporting().{{end}}{{end}}{{end}}
+		//  You can create your own tasks or use predefined tasks from cliffhanger, e.g.: thing.TaskBoiler(), meterelec.TaskReporting().{{end}}{{end}}
 	)
 }
