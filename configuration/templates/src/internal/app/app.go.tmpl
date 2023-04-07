@@ -20,7 +20,7 @@ func New(
 	cfgSrv *config.Service,
 	appLifecycle *lifecycle.Lifecycle,
 	manifestLoader manifest.Loader,{{if eq .Type "adapter"}}
-	adapter adapter.ExtendedAdapter,{{end}}
+	adapter adapter.Adapter,{{end}}
 ) app.App {
 	return &application{
 		cfgSrv:         cfgSrv,
@@ -35,7 +35,7 @@ type application struct {
 	cfgSrv         *config.Service
 	appLifecycle   *lifecycle.Lifecycle
 	manifestLoader manifest.Loader{{if eq .Type "adapter"}}
-	adapter        adapter.ExtendedAdapter{{end}}
+	adapter        adapter.Adapter{{end}}
 }
 
 // GetManifest returns the manifest object based on current application state and configuration.
