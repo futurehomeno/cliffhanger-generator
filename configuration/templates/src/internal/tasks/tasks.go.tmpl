@@ -21,7 +21,7 @@ func New(
 	return task.Combine[[]*task.Task]({{ if .IncludeComments }}
 		// TODO: You should add here all initialization or recurring tasks for your application.{{end}}{{if eq .Domain "edge"}}
 		app.TaskApp(application, appLifecycle),{{end}}{{if eq .Type "adapter"}}
-		cliffAdapter.TaskAdapter(adapter, 30 * time.Second),{{ if .IncludeComments }}
+		cliffAdapter.TaskAdapter(adapter, 30*time.Second),{{ if .IncludeComments }}
 		// TODO: You should add here all recurring tasks for an adapter, such as periodic reporting of readings.
 		//  You can create your own tasks or use predefined tasks from cliffhanger, e.g.: thing.TaskBoiler(), meterelec.TaskReporting().{{end}}{{end}}
 	)

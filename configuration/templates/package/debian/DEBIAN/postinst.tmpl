@@ -38,14 +38,21 @@ set_ownership() {
 	echo -n "Set proper ownership and rights for files..."{{if eq .Domain "edge"}}
 	chown -R {{.PackageName}}:thingsplex /opt/thingsplex/{{.PackageName}} || true
 	chown -R {{.PackageName}}:thingsplex /var/log/thingsplex/{{.PackageName}} || true
-	chmod 644 /opt/thingsplex/{{.PackageName}}/defaults/* || true
-	chmod 644 /opt/thingsplex/{{.PackageName}}/VERSION
-	chmod 644 /var/log/thingsplex/{{.PackageName}}/* || true{{else}}
+	chmod -R 644 /opt/thingsplex/{{.PackageName}} || true
+	chmod 755 /opt/thingsplex/{{.PackageName}} || true
+	chmod 755 /opt/thingsplex/{{.PackageName}}/{{.PackageName}} || true
+	chmod 755 /opt/thingsplex/{{.PackageName}}/defaults || true
+	chmod 755 /opt/thingsplex/{{.PackageName}}/data || true
+	chmod -R 644 /var/log/thingsplex/{{.PackageName}} || true
+	chmod 755 /var/log/thingsplex/{{.PackageName}} || true{{else}}
 	chown -R {{.PackageName}}:futurehome /var/lib/futurehome/{{.PackageName}} || true
 	chown -R {{.PackageName}}:futurehome /var/log/futurehome/{{.PackageName}} || true
-	chmod 644 /var/log/futurehome/{{.PackageName}}/* || true
-	chmod 644 /etc/futurehome/{{.PackageName}}/* || true
-	chmod 644 /var/lib/futurehome/{{.PackageName}}/* || true{{end}}
+	chmod -R 644 /var/log/futurehome/{{.PackageName}} || true
+	chmod 755 /var/log/futurehome/{{.PackageName}} || true
+	chmod -R 644 /etc/futurehome/{{.PackageName}} || true
+	chmod 755 /etc/futurehome/{{.PackageName}} || true
+	chmod -R 644 /var/lib/futurehome/{{.PackageName}} || true
+	chmod 755 /var/lib/futurehome/{{.PackageName}} || true{{end}}
 	echo "...OK"
 }
 
