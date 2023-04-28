@@ -40,6 +40,7 @@ set_ownership() {
 	chown -R {{.PackageName}}:thingsplex /var/log/thingsplex/{{.PackageName}} || true
 	chmod -R 644 /opt/thingsplex/{{.PackageName}} || true
 	chmod 755 /opt/thingsplex/{{.PackageName}} || true
+	chmod 755 /opt/thingsplex/{{.PackageName}}/{{.PackageName}} || true
 	chmod 755 /opt/thingsplex/{{.PackageName}}/defaults || true
 	chmod 755 /opt/thingsplex/{{.PackageName}}/data || true
 	chmod -R 644 /var/log/thingsplex/{{.PackageName}} || true
