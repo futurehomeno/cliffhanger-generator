@@ -15,6 +15,8 @@ func Execute() {
 
 	fmt.Println("Welcome to the Cliffhanger generator!") //nolint:forbidigo
 
+	cfg := &configuration.Config{}
+
 	err = survey.Ask(Questions(), cfg)
 	if err != nil {
 		fail(fmt.Errorf("failed to gather information: %w", err))
