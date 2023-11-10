@@ -13,7 +13,7 @@ import (
 // Execute loads configuration and then builds and executes the application.
 func Execute() {
 	//nolint:forcetypeassert
-	cfg := getConfigService().Model().(*config.Config)
+	cfg := getConfigService().Model()
 
 	bootstrap.InitializeLogger(cfg.LogFile, cfg.LogLevel, cfg.LogFormat)
 

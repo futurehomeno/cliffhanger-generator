@@ -34,7 +34,7 @@ func NewConfigService({{if eq .Domain "core"}}cfgDir, {{end}}workDir string) *Se
 // - providing concurrency safe access to settings,
 // - persistence of settings.
 type Service struct {
-	storage.Storage
+	storage.Storage[*Config]
 	lock *sync.RWMutex
 }
 
@@ -43,7 +43,7 @@ func (cs *Service) GetLogLevel() string {
 	cs.lock.RLock()
 	defer cs.lock.RUnlock()
 
-	return cs.Storage.Model().(*Config).LogLevel
+	return cs.Storage.Model().LogLevel
 }
 
 // SetLogLevel allows to safely set and persist a configuration setting.
@@ -51,13 +51,13 @@ func (cs *Service) SetLogLevel(value string) error {
 	cs.lock.Lock()
 	defer cs.lock.Unlock()
 
-	cs.Storage.Model().(*Config).ConfiguredAt = time.Now().Format(time.RFC3339)
-	cs.Storage.Model().(*Config).LogLevel = value
+	cs.Storage.Model().ConfiguredAt = time.Now().Format(time.RFC3339)
+	cs.Storage.Model().LogLevel = value
 
 	return cs.Storage.Save()
 }{{if eq .Domain "edge"}}
 
 // Factory is a factory method returning the configuration object without default settings.
-func Factory() interface{} {
+func Factory() *Config {
 	return &Config{}
 }{{end}}
