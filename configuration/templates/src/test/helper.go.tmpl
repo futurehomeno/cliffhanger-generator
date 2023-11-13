@@ -51,5 +51,5 @@ func configSetup(t *testing.T, configSet string) *config.Config {
 		t.Fatalf("failed to load configuration: %s", err)
 	}
 
-	return cfgSrv.Model().(*config.Config)
+	return cfgSrv.Model()
 }
