@@ -34,6 +34,7 @@ type serviceContainer struct {
 	manifestLoader      manifest.Loader{{end}}{{if eq .Type "adapter"}}
 	adapter             cliffAdapter.Adapter
 	thingFactory        cliffAdapter.ThingFactory{{end}}{{ if .IncludeComments }}
+	eventManager        event.Manager
 	// TODO: You may add any additional dependency that has to be injected, e.g.: API client.{{end}}
 }
 
@@ -130,6 +131,7 @@ func getAdapter(cfg *config.Config) cliffAdapter.Adapter {
 
 		services.adapter = cliffAdapter.NewAdapter(
 			getMQTT(cfg),
+			getEventManager(),
 			getThingFactory(cfg),
 			adapterState,
 			routing.ResourceName,
@@ -138,6 +140,15 @@ func getAdapter(cfg *config.Config) cliffAdapter.Adapter {
 	}
 
 	return services.adapter
+}
+
+// getEventManager creates or returns existing event manager service.
+func getEventManager() event.Manager {
+	if services.eventManager == nil {
+		services.eventManager = event.NewManager()
+	}
+
+	return services.eventManager
 }
 
 // getThingFactory creates or returns existing thing factory service.
