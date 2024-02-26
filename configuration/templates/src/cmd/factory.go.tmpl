@@ -4,6 +4,7 @@ import ({{if eq .Type "adapter"}}
 	cliffAdapter "github.com/futurehomeno/cliffhanger/adapter"{{end}}{{if eq .Domain "edge"}}
 	cliffApp "github.com/futurehomeno/cliffhanger/app"{{end}}
 	"github.com/futurehomeno/cliffhanger/bootstrap"
+	"github.com/futurehomeno/cliffhanger/event"
 	"github.com/futurehomeno/cliffhanger/hub"{{if eq .Domain "edge"}}
 	"github.com/futurehomeno/cliffhanger/lifecycle"
 	"github.com/futurehomeno/cliffhanger/manifest"{{end}}
