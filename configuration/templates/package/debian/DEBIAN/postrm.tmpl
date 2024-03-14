@@ -4,12 +4,12 @@ set -e
 case "$1" in
 	remove|purge)
 		echo -n "Removing service logs..."{{if eq .Domain "edge"}}
-		rm /var/log/thingsplex/{{.PackageName}}/* || true{{else}}
-		rm /var/log/futurehome/{{.PackageName}}/* || true{{end}}
+		rm -r /var/log/thingsplex/{{.PackageName}} || true{{else}}
+		rm -r /var/log/futurehome/{{.PackageName}} || true{{end}}
 		echo "...OK"
 		echo -n "Removing service configuration and data files..."{{if eq .Domain "edge"}}
-		rm /opt/thingsplex/{{.PackageName}}/data/* || true{{else}}
-		rm /var/lib/futurehome/{{.PackageName}}/* || true{{end}}
+		rm -r /opt/thingsplex/{{.PackageName}} || true{{else}}
+		rm -r /var/lib/futurehome/{{.PackageName}} || true{{end}}
 		echo "...OK"
 	;;
 
