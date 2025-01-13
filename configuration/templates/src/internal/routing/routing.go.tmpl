@@ -11,8 +11,10 @@ import ({{if eq .Type "adapter"}}
 )
 
 const (
-	ResourceName = "{{.ServiceName}}" // ResourceName is the name of the application.
-	ServiceName  = "{{.ServiceName}}" // ServiceName is the name of the main service of the application.
+    // ResourceName is the name of the application.
+	ResourceName = "{{.ServiceName}}"
+	// ServiceName is the name of the main service of the application.
+	ServiceName  = "{{.ServiceName}}"
 )
 
 // New creates a new routing table with all message handlers and their voters.
